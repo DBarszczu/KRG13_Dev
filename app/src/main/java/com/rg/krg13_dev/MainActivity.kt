@@ -4,11 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.navigation.compose.rememberNavController
 import com.rg.krg13_dev.navigation.AppNavHost
 import com.rg.krg13_dev.ui.theme.KRG13_DevTheme
+import com.rg.krg13_dev.autocomputer.AutoComputerViewModel
 
 class MainActivity : ComponentActivity() {
+
+    private val autoComputerViewModel: AutoComputerViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -16,7 +21,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             KRG13_DevTheme {
                 val navController = rememberNavController()
-
                 AppNavHost(navController = navController)
             }
         }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.rg.krg13_dev.screens.debug.NetDebug2Screen
 import com.rg.krg13_dev.screens.debug.NetDebugScreen
 import com.rg.krg13_dev.screens.deviceInfo.DeviceInfoScreen
 import com.rg.krg13_dev.screens.home.HomeScreen
@@ -23,10 +24,14 @@ fun AppNavHost(navController: NavHostController) {
         }
 
         composable(Screen.Home.route) {
-            HomeScreen()
+            HomeScreen(navController)
         }
         composable(Screen.NetDebug.route) {
             NetDebugScreen()
         }
+        composable(Screen.NetDebug2.route) {
+            NetDebug2Screen()
+        }
+
     }
 }

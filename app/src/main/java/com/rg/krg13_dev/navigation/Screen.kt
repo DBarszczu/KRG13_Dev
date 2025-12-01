@@ -4,5 +4,7 @@ sealed class Screen(val route: String) {
     object DeviceInfo : Screen("device_info")
     object Home : Screen("home")
     object NetDebug : Screen("debug_network")
+    object NetDebug2 : Screen("debug2")
+
 
 }
