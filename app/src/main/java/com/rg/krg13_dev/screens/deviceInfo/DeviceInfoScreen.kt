@@ -38,7 +38,7 @@ fun DeviceInfoScreen(onContinue: () -> Unit) {
 
     LaunchedEffect(hold) {
         if (!hold) {
-            delay(3000)
+            delay(500)
             onContinue()
         }
     }

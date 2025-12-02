@@ -22,7 +22,7 @@ fun TicketButton(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(80.dp),
         color = Color(0xFF324B63),
         shape = RoundedCornerShape(8.dp),
         onClick = onClick
@@ -36,13 +36,13 @@ fun TicketButton(
         ) {
             Text(
                 text = title,
-                fontSize = 18.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(
                 text = price,
-                fontSize = 18.sp,
+                fontSize = 22.sp,
                 color = Color.White
             )
         }

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.rg.krg13_dev.R
 import com.rg.krg13_dev.ui.components.TicketCounter
+import com.rg.krg13_dev.utils.SoundManager
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,7 +30,7 @@ fun MultiTicketScreen(
     var normalCount by remember { mutableStateOf(0) }
     var reducedCount by remember { mutableStateOf(0) }
 
-    // ====================== CENY (możesz podmienić na taryfę) ======================
+    // ====================== CENY ======================
     val priceNormal = 3.20
     val priceReduced = 1.60
 
@@ -51,7 +52,7 @@ fun MultiTicketScreen(
         }
     }
 
-    // ====================== CAŁY UI ======================
+    // ====================== UI ======================
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,6 +66,7 @@ fun MultiTicketScreen(
             // =======================================================
             //                       HEADER
             // =======================================================
+            // ------------------- GÓRNY PASEK -------------------
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -78,26 +80,26 @@ fun MultiTicketScreen(
                     Image(
                         painter = painterResource(R.drawable.visa),
                         contentDescription = null,
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(80.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Image(
                         painter = painterResource(R.drawable.mastercard),
                         contentDescription = null,
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(80.dp)
                     )
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = time,
-                        fontSize = 22.sp,
+                        fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFAFE1FF)
                     )
                     Text(
                         text = date,
-                        fontSize = 16.sp,
+                        fontSize = 24.sp,
                         color = Color.White
                     )
                 }
@@ -119,8 +121,14 @@ fun MultiTicketScreen(
                     label = "BILET NORMALNY",
                     price = String.format("%.2f zł", priceNormal),
                     count = normalCount,
-                    onMinus = { if (normalCount > 0) normalCount-- },
-                    onPlus = { normalCount++ }
+                    onMinus = {
+                        SoundManager.playClick()
+                        if (normalCount > 0) normalCount--
+                    },
+                    onPlus = {
+                        SoundManager.playClick()
+                        normalCount++
+                    }
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -130,8 +138,14 @@ fun MultiTicketScreen(
                     label = "BILET ULGOWY",
                     price = String.format("%.2f zł", priceReduced),
                     count = reducedCount,
-                    onMinus = { if (reducedCount > 0) reducedCount-- },
-                    onPlus = { reducedCount++ }
+                    onMinus = {
+                        SoundManager.playClick()
+                        if (reducedCount > 0) reducedCount--
+                    },
+                    onPlus = {
+                        SoundManager.playClick()
+                        reducedCount++
+                    }
                 )
 
                 Spacer(Modifier.height(24.dp))
@@ -142,14 +156,14 @@ fun MultiTicketScreen(
                 Text(
                     text = "DO ZAPŁATY:",
                     color = Color.White,
-                    fontSize = 18.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     text = String.format("%.2f zł", totalPrice),
                     color = Color(0xFFAFE1FF),
-                    fontSize = 32.sp,
+                    fontSize = 36.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
 
@@ -166,17 +180,20 @@ fun MultiTicketScreen(
 
                     // WSTECZ
                     Button(
-                        onClick = { navController.popBackStack() },
+                        onClick = {
+                            SoundManager.playClick()
+                            navController.popBackStack()
+                        },
                         modifier = Modifier
                             .weight(1f)
-                            .height(55.dp),
+                            .height(70.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF3B4F63)
                         )
                     ) {
                         Text(
                             "‹ WSTECZ",
-                            fontSize = 18.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
                         )
@@ -186,17 +203,20 @@ fun MultiTicketScreen(
 
                     // ZAKUP
                     Button(
-                        onClick = { /* TODO - implement payment */ },
+                        onClick = {
+                            SoundManager.playClick()
+                            // TODO implement payment
+                        },
                         modifier = Modifier
                             .weight(1f)
-                            .height(55.dp),
+                            .height(70.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF577CA0)
                         )
                     ) {
                         Text(
                             "ZAKUP",
-                            fontSize = 18.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )

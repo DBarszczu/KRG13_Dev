@@ -23,6 +23,7 @@ import com.rg.krg13_dev.ui.components.NoCommunicationOverlay
 import com.rg.krg13_dev.ui.components.TicketButton
 import com.rg.krg13_dev.ui.components.TicketButtonArrow
 import com.rg.krg13_dev.ui.components.TicketControlLockOverlay
+import com.rg.krg13_dev.utils.SoundManager
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -81,31 +82,30 @@ fun HomeScreen(
                         Image(
                             painter = painterResource(R.drawable.visa),
                             contentDescription = null,
-                            modifier = Modifier.size(50.dp)
+                            modifier = Modifier.size(80.dp)
                         )
                         Spacer(Modifier.width(8.dp))
                         Image(
                             painter = painterResource(R.drawable.mastercard),
                             contentDescription = null,
-                            modifier = Modifier.size(50.dp)
+                            modifier = Modifier.size(80.dp)
                         )
                     }
 
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
                             text = time,
-                            fontSize = 22.sp,
+                            fontSize = 30.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFAFE1FF)
                         )
                         Text(
                             text = date,
-                            fontSize = 16.sp,
+                            fontSize = 24.sp,
                             color = Color.White
                         )
                     }
                 }
-
                 // ------------------- SEKCJA PRZYSTANKÓW -------------------
                 Column(
                     modifier = Modifier
@@ -118,13 +118,13 @@ fun HomeScreen(
                     Text(
                         "PRZYSTANEK WEJŚCIOWY:",
                         color = Color(0xFF8FB4D8),
-                        fontSize = 12.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         boardingStop,
                         color = Color.White,
-                        fontSize = 18.sp
+                        fontSize = 22.sp
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -132,17 +132,17 @@ fun HomeScreen(
                     Text(
                         "PRZYSTANEK WYJŚCIOWY:",
                         color = Color(0xFF8FB4D8),
-                        fontSize = 12.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         alightingStop,
                         color = Color.White,
-                        fontSize = 18.sp
+                        fontSize = 22.sp
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(36.dp))
 
                 // ------------------- KAFLE BILETÓW -------------------
                 Column(
@@ -155,6 +155,7 @@ fun HomeScreen(
                         title = "BILET NORMALNY",
                         price = "3.20 zł"
                     ) {
+                        SoundManager.playClick()
                         // TODO klik
                     }
 
@@ -164,6 +165,7 @@ fun HomeScreen(
                         title = "BILET NORMALNY",
                         price = "1.60 zł"
                     ) {
+                        SoundManager.playClick()
                         // TODO klik
                     }
 
@@ -172,6 +174,7 @@ fun HomeScreen(
                     TicketButtonArrow(
                         title = "ZAKUP WIELU BILETÓW"
                     ) {
+                        SoundManager.playClick()
                         navController.navigate(Screen.MultiTicket.route)
                     }
 

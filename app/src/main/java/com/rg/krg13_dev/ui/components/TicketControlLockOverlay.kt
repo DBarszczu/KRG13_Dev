@@ -42,16 +42,16 @@ fun TicketControlLockOverlay() {
             // 🔒 kłódka z delikatnym pulsem
             Text(
                 text = "🔒",
-                fontSize = (120 * scale).sp,
+                fontSize = (180 * scale).sp,
                 color = Color(0xFFFFD740) // żółty
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Zablokowany",
+                text = "ZABLOKOWANY",
                 color = Color.White,
-                fontSize = 30.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -60,7 +60,7 @@ fun TicketControlLockOverlay() {
             Text(
                 text = "Kontrola Biletów",
                 color = Color(0xFFEEEEEE),
-                fontSize = 22.sp
+                fontSize = 28.sp
             )
         }
     }

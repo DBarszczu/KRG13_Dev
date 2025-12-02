@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rg.krg13_dev.navigation.AppNavHost
 import com.rg.krg13_dev.ui.theme.KRG13_DevTheme
 import com.rg.krg13_dev.autocomputer.AutoComputerViewModel
+import com.rg.krg13_dev.utils.SoundManager
 
 class MainActivity : ComponentActivity() {
 
@@ -17,7 +18,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        SoundManager.init(this)   // ← ważne
         setContent {
             KRG13_DevTheme {
                 val navController = rememberNavController()

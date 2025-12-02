@@ -55,7 +55,7 @@ fun NoCommunicationOverlay() {
             Text(
                 text = "✖",
                 color = Color.Red,
-                fontSize = (140 * scale).sp,
+                fontSize = (180 * scale).sp,
                 fontWeight = FontWeight.Black
             )
 
@@ -64,10 +64,10 @@ fun NoCommunicationOverlay() {
 
             // ❗ Ten napis się NIE animuje
             Text(
-                text = "Brak komunikacji",
+                text = "BRAK KOMUNIKACJI",
                 color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold
             )
 
         }
