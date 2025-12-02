@@ -8,6 +8,7 @@ import com.rg.krg13_dev.screens.debug.NetDebug2Screen
 import com.rg.krg13_dev.screens.debug.NetDebugScreen
 import com.rg.krg13_dev.screens.deviceInfo.DeviceInfoScreen
 import com.rg.krg13_dev.screens.home.HomeScreen
+import com.rg.krg13_dev.screens.tickets.MultiTicketScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -25,6 +26,9 @@ fun AppNavHost(navController: NavHostController) {
 
         composable(Screen.Home.route) {
             HomeScreen(navController)
+        }
+        composable(Screen.MultiTicket.route) {
+            MultiTicketScreen(navController)
         }
         composable(Screen.NetDebug.route) {
             NetDebugScreen()

@@ -9,7 +9,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,14 +50,6 @@ fun NoCommunicationOverlay() {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            // ❗ Ten napis się NIE animuje
-            Text(
-                text = "Brak komunikacji",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
 
             // ❗ Animuje się tylko X — powiększa i zmniejsza
             Text(
@@ -64,6 +58,18 @@ fun NoCommunicationOverlay() {
                 fontSize = (140 * scale).sp,
                 fontWeight = FontWeight.Black
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            // ❗ Ten napis się NIE animuje
+            Text(
+                text = "Brak komunikacji",
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+            )
+
         }
     }
 }

@@ -31,15 +31,16 @@ class AutoComputerViewModel : ViewModel() {
     private val _stops = MutableStateFlow<List<Stop>>(emptyList())
     val stops: StateFlow<List<Stop>> get() = _stops
 
-
-    // 🔌 komunikacja OK / brak komunikacji
-    private val _isConnected = MutableStateFlow(true)
+    // 🔌 komunikacja
+    // UWAGA: na starcie ma być "brak komunikacji"
+    private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> get() = _isConnected
 
     // 🔒 blokada "Kontrola Biletów"
     private val _isLocked = MutableStateFlow(false)
     val isLocked: StateFlow<Boolean> get() = _isLocked
 
+    // logika opóźnienia wykrycia braku komunikacji
     private var disconnectTimestamp = 0L
     private val disconnectDelay = 5000L // 5 sekund
 
@@ -66,18 +67,46 @@ class AutoComputerViewModel : ViewModel() {
 
 
     // ----------------------------------------------------
-    // CALLBACKI Z MANAGERA – *WOŁANE PRZEZ AutoComputerManager*
+    // CALLBACKI Z MANAGERA – WOŁANE PRZEZ AutoComputerManager
     // ----------------------------------------------------
 
-    /** Odebrano ramkę UDP → komunikacja OK */
+    /**
+     * Odebrano ramkę UDP → komunikacja OK.
+     *
+     * WYMAGANIE:
+     * - po powrocie komunikacji blokada ma być zdjęta
+     *   (DEVICE_LOCKED_FLAG = false, ekran blokady znika)
+     */
     fun onCommunicationRestored() {
         disconnectTimestamp = 0L
+
+        // jeżeli wracamy z "braku komunikacji", to upewniamy się,
+        // że blokada jest zdjęta logicznie i w statusie
+        if (!_isConnected.value) {
+            // UI – zdejmujemy ewentualną blokadę
+            if (_isLocked.value) {
+                _isLocked.value = false
+            }
+
+            // STATUS – zdejmujemy flagę DEVICE_LOCKED_FLAG
+            statusManager.setFlag("DEVICE_LOCKED_FLAG", false)
+            statusManager.updateStatusFlags(status)
+        }
+
         _isConnected.value = true
     }
 
-    /** Brak ramek → START odliczania */
+    /**
+     * Wywoływane przez watchdog w AutoComputerManager, gdy długo nie ma ramek.
+     *
+     * WYMAGANIE:
+     * - jeśli kasownik był zablokowany, a potem nie ma komunikacji:
+     *   → blokada ma zniknąć
+     *   → ma pojawić się "brak komunikacji"
+     */
     fun onNoCommunication() {
         if (disconnectTimestamp == 0L) {
+            // pierwsze wykrycie – start odliczania
             disconnectTimestamp = System.currentTimeMillis()
             return
         }
@@ -85,17 +114,30 @@ class AutoComputerViewModel : ViewModel() {
         val elapsed = System.currentTimeMillis() - disconnectTimestamp
 
         if (elapsed >= disconnectDelay) {
+            // już jesteśmy w stanie "brak komunikacji" – nic więcej nie rób
+            if (!_isConnected.value) return
+
+            // przechodzimy w stan braku komunikacji:
+            // 1) zdejmujemy blokadę w UI
+            if (_isLocked.value) {
+                _isLocked.value = false
+            }
+
+            // 2) zdejmujemy flagę DEVICE_LOCKED_FLAG w statusie
+            statusManager.setFlag("DEVICE_LOCKED_FLAG", false)
+            statusManager.updateStatusFlags(status)
+
+            // 3) ustawiamy brak komunikacji
             _isConnected.value = false
-            _isLocked.value = false
         }
     }
 
-    /** Komenda LOCK (0x05) */
+    /** Komenda LOCK (0x05) – z AutoComputerManager */
     fun onDeviceLocked() {
         _isLocked.value = true
     }
 
-    /** Komenda UNLOCK (0x06) */
+    /** Komenda UNLOCK (0x06) – z AutoComputerManager */
     fun onDeviceUnlocked() {
         _isLocked.value = false
     }
@@ -110,7 +152,6 @@ class AutoComputerViewModel : ViewModel() {
         _courseParams.value = parsed
     }
 
-    /** Manager używa tego */
     fun onNewCourse(parameters: CourseParameter) {
         _courseParams.value = parameters
     }
@@ -131,7 +172,7 @@ class AutoComputerViewModel : ViewModel() {
 
 
     // ----------------------------------------------------
-    // RĘCZNE BLOKOWANIE (opcjonalne)
+    // RĘCZNE BLOKOWANIE (opcjonalne z UI)
     // ----------------------------------------------------
     fun onLock() { _isLocked.value = true }
     fun onUnlock() { _isLocked.value = false }

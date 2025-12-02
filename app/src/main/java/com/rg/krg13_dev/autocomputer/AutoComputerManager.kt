@@ -246,10 +246,43 @@ class AutoComputerManager(
 
 
     private fun sendTariff(packet: DatagramPacket, socket: DatagramSocket, hex: String) {
+
+        try {
+            val dataBytes = packet.data.copyOf(packet.length)
+
+            // ASCII (czytelne znaki)
+            val ascii = String(dataBytes, charset)
+                .trim('\u0000', '\r', '\n')
+
+            // BIN — każdy bajt w formacie 8-bitowym
+            val binary = dataBytes.joinToString(" ") {
+                String.format("%8s", it.toUByte().toString(2)).replace(' ', '0')
+            }
+
+            Log.d("TARIFF", "================= TARYFA =================")
+            Log.d("TARIFF", "Długość pakietu: ${packet.length} bajtów")
+
+            Log.d("TARIFF", "HEX:")
+            Log.d("TARIFF", hex)
+
+            Log.d("TARIFF", "ASCII:")
+            Log.d("TARIFF", ascii)
+
+            Log.d("TARIFF", "BIN (8-bit):")
+            Log.d("TARIFF", binary)
+
+            Log.d("TARIFF", "==========================================")
+
+        } catch (e: Exception) {
+            Log.e("TARIFF", "Błąd parsowania taryfy: ${e.message}")
+        }
+
         statusManager.setFlag("MISSING_TARIFF_TABLE_FLAG", false)
         statusManager.updateStatusFlags(status)
         sendSimple(packet, socket, AcAnswer.ANS_SAVE_TARIFF_TABLE)
     }
+
+
 
     private fun sendBlackList(packet: DatagramPacket, socket: DatagramSocket, hex: String) {
         statusManager.setFlag("MISSING_BLACKLIST_FLAG", false)
