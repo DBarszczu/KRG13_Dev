@@ -2,10 +2,13 @@ package com.rg.krg13_dev.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,36 +17,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TicketControlLockOverlay() {
-
-    // 🔒 animacja tylko ikonki kłódki
+fun TicketControlLockOverlay(
+    modifier: Modifier = Modifier
+) {
     val transition = rememberInfiniteTransition()
+
     val scale by transition.animateFloat(
         initialValue = 0.9f,
         targetValue = 1.1f,
         animationSpec = infiniteRepeatable(
-            tween(
-                durationMillis = 900,
-                easing = FastOutSlowInEasing
-            ),
+            tween(900, easing = FastOutSlowInEasing),
             RepeatMode.Reverse
         )
     )
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(Color(0xAA000000)), // ciemne półprzezroczyste tło
+            .clickable(    // ⛔ BLOKADA KLIKNIĘĆ
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {}
+            .background(Color(0xAA000000)),
         contentAlignment = Alignment.Center
     ) {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            // 🔒 kłódka z delikatnym pulsem
             Text(
                 text = "🔒",
                 fontSize = (180 * scale).sp,
-                color = Color(0xFFFFD740) // żółty
+                color = Color(0xFFFFD740)
             )
 
             Spacer(modifier = Modifier.height(16.dp))

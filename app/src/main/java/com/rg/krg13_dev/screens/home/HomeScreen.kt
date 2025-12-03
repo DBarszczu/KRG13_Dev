@@ -3,7 +3,6 @@ package com.rg.krg13_dev.screens.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -11,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,6 +19,8 @@ import androidx.navigation.NavHostController
 import com.rg.krg13_dev.R
 import com.rg.krg13_dev.autocomputer.AutoComputerViewModel
 import com.rg.krg13_dev.navigation.Screen
+import com.rg.krg13_dev.ui.components.BottomLogosBar
+import com.rg.krg13_dev.ui.components.LanguageBar
 import com.rg.krg13_dev.ui.components.NoCommunicationOverlay
 import com.rg.krg13_dev.ui.components.TicketButton
 import com.rg.krg13_dev.ui.components.TicketButtonArrow
@@ -33,16 +35,13 @@ fun HomeScreen(
     navController: NavHostController,
     autoComputerViewModel: AutoComputerViewModel = viewModel()
 ) {
-    // ------------------- ODBIÓR STANÓW -------------------
     val isConnected by autoComputerViewModel.isConnected.collectAsState()
     val isLocked by autoComputerViewModel.isLocked.collectAsState()
     val course by autoComputerViewModel.courseParams.collectAsState()
 
-    // Dane z SETJ (z fallbackami)
     val boardingStop = course?.T_boardingStopName?.ifBlank { "-" } ?: "-"
     val alightingStop = course?.t_alightingStopName?.ifBlank { "-" } ?: "-"
 
-    // ------------------- ZEGAR -------------------
     var time by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
 
@@ -55,7 +54,6 @@ fun HomeScreen(
         }
     }
 
-    // ------------------- UI GŁÓWNY -------------------
     Box(modifier = Modifier.fillMaxSize()) {
 
         Surface(
@@ -64,11 +62,10 @@ fun HomeScreen(
         ) {
 
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
 
-                // ------------------- GÓRNY PASEK -------------------
+                // ---------------- GÓRNA BELKA ----------------
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -106,7 +103,8 @@ fun HomeScreen(
                         )
                     }
                 }
-                // ------------------- SEKCJA PRZYSTANKÓW -------------------
+
+                // ---------------- PRZYSTANKI ----------------
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -116,35 +114,27 @@ fun HomeScreen(
                     Spacer(Modifier.height(6.dp))
 
                     Text(
-                        "PRZYSTANEK WEJŚCIOWY:",
+                        stringResource(R.string.entry_stop),
                         color = Color(0xFF8FB4D8),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        boardingStop,
-                        color = Color.White,
-                        fontSize = 22.sp
-                    )
+                    Text(boardingStop, color = Color.White, fontSize = 22.sp)
 
                     Spacer(Modifier.height(12.dp))
 
                     Text(
-                        "PRZYSTANEK WYJŚCIOWY:",
+                        stringResource(R.string.exit_stop),
                         color = Color(0xFF8FB4D8),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        alightingStop,
-                        color = Color.White,
-                        fontSize = 22.sp
-                    )
+                    Text(alightingStop, color = Color.White, fontSize = 22.sp)
                 }
 
                 Spacer(Modifier.height(36.dp))
 
-                // ------------------- KAFLE BILETÓW -------------------
+                // ---------------- KAFELKI ----------------
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -152,46 +142,41 @@ fun HomeScreen(
                 ) {
 
                     TicketButton(
-                        title = "BILET NORMALNY",
+                        title = stringResource(R.string.ticket_normal),
                         price = "3.20 zł"
-                    ) {
-                        SoundManager.playClick()
-                        // TODO klik
-                    }
+                    ) { SoundManager.playClick() }
 
                     Spacer(Modifier.height(12.dp))
 
                     TicketButton(
-                        title = "BILET NORMALNY",
+                        title = stringResource(R.string.ticket_reduced),
                         price = "1.60 zł"
-                    ) {
-                        SoundManager.playClick()
-                        // TODO klik
-                    }
+                    ) { SoundManager.playClick() }
 
                     Spacer(Modifier.height(12.dp))
 
                     TicketButtonArrow(
-                        title = "ZAKUP WIELU BILETÓW"
+                        title = stringResource(R.string.ticket_multi)
                     ) {
                         SoundManager.playClick()
                         navController.navigate(Screen.MultiTicket.route)
                     }
-
                 }
 
                 Spacer(Modifier.weight(1f))
             }
         }
 
-        // ------------------- OVERLAY: BRAK KOMUNIKACJI -------------------
-        if (!isConnected) {
-            NoCommunicationOverlay()
+        // ---------------- DOLNY PANEL (Flagi + Logo) ----------------
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            LanguageBar(Modifier.fillMaxWidth())
+            BottomLogosBar(Modifier.fillMaxWidth())
         }
 
-        // ------------------- OVERLAY: KONTROLA BILETÓW -------------------
-        if (isLocked) {
-            TicketControlLockOverlay()
-        }
+        // ---------------- OVERLAYE ZAWSZE NA WIERZCHU ----------------
+        if (!isConnected) NoCommunicationOverlay()
+        if (isLocked) TicketControlLockOverlay()
     }
 }

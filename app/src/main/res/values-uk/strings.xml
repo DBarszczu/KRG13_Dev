@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KRG13_Dev</string>
+    <string name="entry_stop">ПОСАДКОВА ЗУПИНКА</string>
+    <string name="exit_stop">ВИХІДНА ЗУПИНКА</string>
+
+    <string name="ticket_normal">ЗВИЧАЙНИЙ КВИТОК</string>
+    <string name="ticket_reduced">ПІЛЬГОВИЙ КВИТОК</string>
+    <string name="ticket_multi">КУПІВЛЯ КІЛЬКОХ КВИТКІВ</string>
+
+    <string name="total_to_pay">ДО ОПЛАТИ</string>
+    <string name="back_button">НАЗАД</string>
+    <string name="purchase_button">КУПИТИ</string>
+
+    <string name="lang_pl">Польська</string>
+    <string name="lang_en">Англійська</string>
+    <string name="lang_de">Німецька</string>
+    <string name="lang_uk">Українська</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KRG13_Dev</string>
+    <string name="entry_stop">EINSTIEGSHALTESTELLE</string>
+    <string name="exit_stop">AUSSTIEGSHALTESTELLE</string>
+
+    <string name="ticket_normal">NORMALTICKET</string>
+    <string name="ticket_reduced">ERMÄSSIGTES TICKET</string>
+    <string name="ticket_multi">MEHRTICKETS KAUFEN</string>
+
+    <string name="total_to_pay">ZU ZAHLEN</string>
+    <string name="back_button">ZURÜCK</string>
+    <string name="purchase_button">KAUFEN</string>
+
+
+    <string name="lang_pl">Polnisch</string>
+    <string name="lang_en">Englisch</string>
+    <string name="lang_de">Deutsch</string>
+    <string name="lang_uk">Ukrainisch</string>
+</resources>

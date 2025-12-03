@@ -11,11 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.rg.krg13_dev.R
+import com.rg.krg13_dev.ui.components.BottomLogosBar
 import com.rg.krg13_dev.ui.components.TicketCounter
 import com.rg.krg13_dev.utils.SoundManager
 import kotlinx.coroutines.delay
@@ -118,7 +120,7 @@ fun MultiTicketScreen(
 
                 // BILET NORMALNY
                 TicketCounter(
-                    label = "BILET NORMALNY",
+                    label = stringResource(R.string.ticket_normal),
                     price = String.format("%.2f zł", priceNormal),
                     count = normalCount,
                     onMinus = {
@@ -135,7 +137,7 @@ fun MultiTicketScreen(
 
                 // BILET ULGOWY
                 TicketCounter(
-                    label = "BILET ULGOWY",
+                    label = stringResource(R.string.ticket_reduced),
                     price = String.format("%.2f zł", priceReduced),
                     count = reducedCount,
                     onMinus = {
@@ -154,18 +156,21 @@ fun MultiTicketScreen(
                 //                       SUMA DO ZAPŁATY
                 // =======================================================
                 Text(
-                    text = "DO ZAPŁATY:",
+                    text = stringResource(R.string.total_to_pay)+":",
                     color = Color.White,
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
                 Text(
                     text = String.format("%.2f zł", totalPrice),
                     color = Color(0xFFAFE1FF),
                     fontSize = 36.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
+
 
                 Spacer(Modifier.height(24.dp))
 
@@ -192,7 +197,7 @@ fun MultiTicketScreen(
                         )
                     ) {
                         Text(
-                            "‹ WSTECZ",
+                            "‹ "+stringResource(R.string.back_button),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White
@@ -215,7 +220,7 @@ fun MultiTicketScreen(
                         )
                     ) {
                         Text(
-                            "ZAKUP",
+                            stringResource(R.string.purchase_button),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -224,5 +229,10 @@ fun MultiTicketScreen(
                 }
             }
         }
+        // ======================= LOGA NA DOLE =======================
+        BottomLogosBar(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        )
     }
 }

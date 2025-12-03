@@ -34,13 +34,13 @@ fun TicketCounter(
             Text(
                 label,
                 color = Color.White,
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 price,
                 color = Color.White,
-                fontSize = 22.sp
+                fontSize = 26.sp
             )
         }
 
@@ -57,7 +57,7 @@ fun TicketCounter(
             Text(
                 text = count.toString(),
                 color = Color(0xFFAFE1FF),
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
 

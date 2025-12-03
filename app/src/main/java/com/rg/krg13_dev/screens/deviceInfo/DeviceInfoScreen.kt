@@ -1,22 +1,20 @@
 package com.rg.krg13_dev.screens.deviceInfo
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rg.krg13_dev.utils.SystemInfo
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceInfoScreen(onContinue: () -> Unit) {
 
@@ -30,79 +28,100 @@ fun DeviceInfoScreen(onContinue: () -> Unit) {
     val buildId = remember { SystemInfo.getBuildId() }
     val androidVersion = remember { SystemInfo.getAndroidVersion() }
 
-    val protocol = remember { SystemInfo.getCommunicationProtocol(context) }
+    val protocol = remember { SystemInfo.getCommunicationProtocol() }
     val mac = remember { SystemInfo.getMacAddress() }
-    val ip = remember { SystemInfo.getIp(context) }
-    val netmask = remember { SystemInfo.getNetmask(context) }
-    val gateway = remember { SystemInfo.getGateway(context) }
+    val ip = remember { SystemInfo.getIp() }
+    val netmask = remember { SystemInfo.getNetmask() }
+    val gateway = remember { SystemInfo.getGateway() }
 
     LaunchedEffect(hold) {
         if (!hold) {
-            delay(500)
+            delay(3000)
             onContinue()
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFEAEAEA)),
-        contentAlignment = Alignment.Center
-    ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Device Info", fontSize = 26.sp) }
+            )
+        }
+    ) { padding ->
 
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .border(2.dp, Color.Gray, RoundedCornerShape(4.dp))
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Firmware version", fontSize = 16.sp)
-            Text(firmware, fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-            Spacer(Modifier.height(12.dp))
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium
+            ) {
 
-            Text("Compilation date/time", fontSize = 16.sp)
-            Text(coreDate, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.padding(20.dp)) {
 
-            Spacer(Modifier.height(12.dp))
+                    InfoItem("Application version", appVersion)
 
-            Text("Communication protocol", fontSize = 16.sp)
-            Text(protocol, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    InfoItem("Firmware version", firmware)
+                    InfoItem("Compilation date/time", coreDate)
+                    InfoItem("Communication protocol", protocol)
+                    InfoItem("Device address (MAC)", mac)
 
-            Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
 
-            Text("Device address", fontSize = 16.sp)
-            Text(mac, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Ethernet configuration",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
 
-            Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(8.dp))
 
-            Text("Ethernet configuration:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text("IP address: $ip")
-            Text("netmask: $netmask")
-            Text("gateway: $gateway")
-            Text("FTP IP: Unknown")
-            Text("TCP port: Unknown")
+                    Text("IP address: $ip")
+                    Text("Netmask: $netmask")
+                    Text("Gateway: $gateway")
+                    Text("FTP IP: Unknown")
+                    Text("TCP port: Unknown")
 
-            Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(16.dp))
 
-            Text("Core date: $coreDate")
-            Text("TS version: $androidVersion")
-            Text("Build ID: $buildId")
-        }
-
-        // HOLD button
-        Button(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp),
-            onClick = {
-                if (!hold) hold = true else onContinue()
+                    InfoItem("Core date", coreDate)
+                    InfoItem("Android TS version", androidVersion)
+                    InfoItem("Build ID", buildId)
+                }
             }
-        ) {
-            Text(
-                if (!hold) "HOLD" else "RELEASE",
-                fontSize = 20.sp
-            )
+
+            Spacer(Modifier.height(24.dp))
+
+            Button(
+                onClick = { if (!hold) hold = true else onContinue() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    if (!hold) "HOLD" else "RELEASE",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun InfoItem(label: String, value: String) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

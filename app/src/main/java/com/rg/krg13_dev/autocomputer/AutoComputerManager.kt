@@ -8,6 +8,7 @@ import java.net.SocketException
 import java.nio.charset.Charset
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
+import java.util.Calendar
 
 
 class AutoComputerManager(
@@ -154,10 +155,37 @@ class AutoComputerManager(
     }
 
     private fun sendDateTime(packet: DatagramPacket, socket: DatagramSocket) {
-        sendSimple(packet, socket, AcAnswer.ANS_CURRENT_DATE_TIME)
+
+        val now = java.util.Calendar.getInstance()
+
+        val year = now.get(Calendar.YEAR) - 2000
+        val month = now.get(Calendar.MONTH) + 1
+        val day = now.get(Calendar.DAY_OF_MONTH)
+
+        val hour = now.get(Calendar.HOUR_OF_DAY)
+        val minute = now.get(Calendar.MINUTE)
+        val second = now.get(Calendar.SECOND)
+
+        val resp = byteArrayOf(
+            AcAnswer.ANS_CURRENT_DATE_TIME.code.toByte(),
+            year.toByte(),
+            month.toByte(),
+            day.toByte(),
+            hour.toByte(),
+            minute.toByte(),
+            second.toByte()
+        )
+
+        socket.send(
+            DatagramPacket(resp, resp.size, packet.address, packet.port)
+        )
+
         statusManager.setFlag("MISSING_CURRENT_TIME_DATA_FLAG", false)
         statusManager.updateStatusFlags(status)
+
+        Log.d("UDP", "ANS_CURRENT_DATE_TIME → ${resp.joinToString(" ") { "%02X".format(it) }}")
     }
+
 
     private fun sendPrinter(packet: DatagramPacket, socket: DatagramSocket, ascii: String) {
         sendSimple(packet, socket, AcAnswer.ANS_PRINTER_CHARACTER)

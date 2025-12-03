@@ -21,7 +21,7 @@ fun CounterButton(
 ) {
     Surface(
         modifier = Modifier
-            .size(45.dp)
+            .size(80.dp)
             .border(1.dp, Color(0xFF324B63), RoundedCornerShape(6.dp)),
         onClick = onClick,
         shape = RoundedCornerShape(6.dp),
@@ -33,7 +33,7 @@ fun CounterButton(
             Text(
                 text,
                 color = Color.White,
-                fontSize = 22.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold
             )
         }

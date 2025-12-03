@@ -1,7 +1,6 @@
 package com.rg.krg13_dev.utils
 
 import android.content.Context
-import android.net.wifi.WifiManager
 import android.os.Build
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -23,67 +22,58 @@ object SystemInfo {
         Build.VERSION.RELEASE ?: "Unknown"
 
     fun getCoreDate(): String =
-        SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US).format(Date(Build.TIME))
+        SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US)
+            .format(Date(Build.TIME))
 
-    fun getCommunicationProtocol(context: Context): String {
-        val ip = IpUtils.getDeviceIpByShell()
+    // ------------------ ETHERNET ONLY ------------------
 
-        return when {
-            ip.startsWith("192.") -> "WIFI"
-            ip.startsWith("10.") -> "ETHERNET"
-            ip.startsWith("100.") -> "LTE"
-            else -> "UNKNOWN"
-        }
-    }
+    fun getCommunicationProtocol(): String =
+        "ETHERNET"
 
     fun getMacAddress(): String {
         val out = runShell("cat /sys/class/net/eth0/address")
-
-        return when {
-            out.contains("Permission denied") -> "Brak dostępu"
-            out.trim().isEmpty() -> "Unknown"
-            else -> out.trim()
-        }
+        return out.trim().ifEmpty { "Unknown" }
     }
 
-    fun getGateway(context: Context): String {
-        return try {
-            val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            val dhcp = wifiManager.dhcpInfo
-            intToIp(dhcp.gateway)
-        } catch (e: Exception) {
-            "Unknown"
-        }
+    fun getIp(): String {
+        return parseIp(runShell("ip addr show eth0"))
     }
 
-    fun getNetmask(context: Context): String {
-        return try {
-            val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            val dhcp = wifiManager.dhcpInfo
-            intToIp(dhcp.netmask)
-        } catch (e: Exception) {
-            "Unknown"
-        }
+    fun getNetmask(): String {
+        val out = runShell("ifconfig eth0")
+        return parseNetmask(out)
     }
 
-    fun getIp(context: Context): String = IpUtils.getDeviceIpByShell()
-
-    private fun intToIp(ip: Int): String {
-        return ((ip and 0xff).toString() + "." +
-                (ip shr 8 and 0xff) + "." +
-                (ip shr 16 and 0xff) + "." +
-                (ip shr 24 and 0xff))
+    fun getGateway(): String {
+        val out = runShell("ip route show")
+        val regex = Regex("""default via (\d+\.\d+\.\d+\.\d+)""")
+        return regex.find(out)?.groupValues?.get(1) ?: "Unknown"
     }
 
-    private fun runShell(cmd: String): String {
+    // ------------------ Parsowanie ------------------
+
+    private fun parseIp(text: String): String {
+        val regex = Regex("""inet (\d+\.\d+\.\d+\.\d+)""")
+        return regex.find(text)?.groupValues?.get(1) ?: "0.0.0.0"
+    }
+
+    private fun parseNetmask(text: String): String {
+        val regex = Regex("""netmask (\d+\.\d+\.\d+\.\d+)""")
+        return regex.find(text)?.groupValues?.get(1) ?: "Unknown"
+    }
+
+    // ------------------ Shell ------------------
+
+    internal fun runShell(cmd: String): String {
         return try {
             val process = ProcessBuilder()
                 .command("sh", "-c", cmd)
                 .redirectErrorStream(true)
                 .start()
 
-            BufferedReader(InputStreamReader(process.inputStream))
-                .use { it.readText() }
+            BufferedReader(InputStreamReader(process.inputStream)).use {
+                it.readText()
+            }
         } catch (e: Exception) {
             ""
         }
