@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KRG13_Dev</string>
+
     <string name="entry_stop">ENTRY STOP</string>
     <string name="exit_stop">EXIT STOP</string>
 
     <string name="ticket_normal">REGULAR TICKET</string>
     <string name="ticket_reduced">DISCOUNTED TICKET</string>
     <string name="ticket_multi">MULTI-TICKET PURCHASE</string>
+    <string name="ticket_check_purchased">CHECK PURCHASED TICKET</string>
+
 
     <string name="total_to_pay">TOTAL</string>
     <string name="back_button">BACK</string>
     <string name="purchase_button">BUY</string>
 
+    <!-- Payment result screens -->
+    <string name="ticket_success_title">ELECTRONIC TICKET\nPURCHASED</string>
+    <string name="ticket_success_amount">Charged %1$s zł</string>
+    <string name="ticket_check_result_title">Dane zapisanej karty</string>
 
+    <string name="ticket_fail_title">THE TICKET WAS\nNOT PURCHASED</string>
+    <string name="ticket_fail_reason">Invalid card or\ninsufficient funds</string>
+
+    <string name="ticket_cancelled_title">THE TICKET\nPURCHASE WAS CANCELLED</string>
+
+    <string name="icon_success">✔️</string>
+    <string name="icon_fail">❌</string>
+    <string name="icon_cancel">❌</string>
+
+    <!-- Languages -->
     <string name="lang_pl">Polish</string>
     <string name="lang_en">English</string>
     <string name="lang_de">German</string>

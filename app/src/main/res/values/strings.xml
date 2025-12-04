@@ -1,19 +1,40 @@
 <resources>
     <string name="app_name">KRG13_Dev</string>
 
+    <!-- Przystanki -->
     <string name="entry_stop">PRZYSTANEK WEJŚCIOWY</string>
     <string name="exit_stop">PRZYSTANEK WYJŚCIOWY</string>
 
+    <!-- Bilety -->
     <string name="ticket_normal">BILET NORMALNY</string>
     <string name="ticket_reduced">BILET ULGOWY</string>
     <string name="ticket_multi">ZAKUP WIELU BILETÓW</string>
+    <string name="ticket_check_purchased">SPRAWDŹ ZAKUPIONY BILET</string>
 
+
+    <!-- MultiTicket -->
     <string name="total_to_pay">DO ZAPŁATY</string>
     <string name="back_button">WSTECZ</string>
     <string name="purchase_button">ZAKUP</string>
 
+    <!-- Języki -->
     <string name="lang_pl">Polski</string>
     <string name="lang_en">English</string>
     <string name="lang_de">Deutsch</string>
     <string name="lang_uk">Українська</string>
+
+    <string name="icon_success">✔️</string>
+    <string name="icon_fail">❌</string>
+    <string name="icon_cancel">❌</string>
+
+    <string name="ticket_success_title">ZAKUPIONO BILET ELEKTRONICZNY</string>
+    <string name="ticket_success_amount">Pobrano %1$s zł</string>
+    <string name="ticket_check_result_title">Dane zapisanej karty</string>
+
+
+    <string name="ticket_fail_title">BILET NIE ZOSTAŁ ZAKUPIONY</string>
+    <string name="ticket_fail_reason">Karta nieważna lub brak środków</string>
+
+    <string name="ticket_cancelled_title">ZAKUP BILETU ZOSTAŁ ANULOWANY</string>
+
 </resources>

@@ -9,6 +9,10 @@ import com.rg.krg13_dev.screens.debug.NetDebugScreen
 import com.rg.krg13_dev.screens.deviceInfo.DeviceInfoScreen
 import com.rg.krg13_dev.screens.home.HomeScreen
 import com.rg.krg13_dev.screens.tickets.MultiTicketScreen
+import com.rg.krg13_dev.screens.tickets.result.TicketCancelledScreen
+import com.rg.krg13_dev.screens.tickets.result.TicketFailScreen
+import com.rg.krg13_dev.screens.tickets.result.TicketSuccessScreen
+import com.rg.krg13_dev.screens.tickets.result.TicketTokenScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -27,15 +31,32 @@ fun AppNavHost(navController: NavHostController) {
         composable(Screen.Home.route) {
             HomeScreen(navController)
         }
+
         composable(Screen.MultiTicket.route) {
             MultiTicketScreen(navController)
         }
-        composable(Screen.NetDebug.route) {
-            NetDebugScreen()
-        }
-        composable(Screen.NetDebug2.route) {
-            NetDebug2Screen()
+
+        composable(Screen.TicketFail.route) {
+            TicketFailScreen(navController)
         }
 
+        composable(Screen.TicketToken.route) {
+            TicketTokenScreen(navController)
+        }
+
+        composable(Screen.TicketCancelled.route) {
+            TicketCancelledScreen(navController)
+        }
+
+        composable(Screen.TicketSuccess.route) { backStackEntry ->
+            val amount = backStackEntry.arguments
+                ?.getString("amount")
+                ?.toDoubleOrNull() ?: 0.0
+
+            TicketSuccessScreen(navController, amount)
+        }
+
+        composable(Screen.NetDebug.route) { NetDebugScreen() }
+        composable(Screen.NetDebug2.route) { NetDebug2Screen() }
     }
 }

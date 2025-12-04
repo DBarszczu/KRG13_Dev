@@ -1,6 +1,8 @@
 package com.rg.krg13_dev.screens.tickets
 
-import androidx.compose.foundation.Image
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -10,229 +12,169 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.pinappall.integration.*
 import com.rg.krg13_dev.R
-import com.rg.krg13_dev.ui.components.BottomLogosBar
+import com.rg.krg13_dev.autocomputer.AutoComputerViewModel
+import com.rg.krg13_dev.navigation.Screen
+import com.rg.krg13_dev.pinappall.PaymentViewModel
 import com.rg.krg13_dev.ui.components.TicketCounter
-import com.rg.krg13_dev.utils.SoundManager
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.*
+import com.rg.krg13_dev.ui.components.TopPaymentHeader
+import com.rg.krg13_dev.ui.components.StopsSection
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun MultiTicketScreen(
-    navController: NavHostController
-) {
-    // ====================== ILOŚCI BILETÓW ======================
-    var normalCount by remember { mutableStateOf(0) }
-    var reducedCount by remember { mutableStateOf(0) }
+fun MultiTicketScreen(navController: NavHostController) {
 
-    // ====================== CENY ======================
-    val priceNormal = 3.20
-    val priceReduced = 1.60
+    val context = LocalContext.current
+    val autoComputer: AutoComputerViewModel =
+        viewModel(context as ComponentActivity)
 
-    // ====================== SUMA ======================
-    val totalPrice = remember(normalCount, reducedCount) {
-        normalCount * priceNormal + reducedCount * priceReduced
-    }
+    val course by autoComputer.courseParams.collectAsState()
+    val boardingStop = course?.T_boardingStopName ?: "-"
+    val alightingStop = course?.t_alightingStopName ?: "-"
 
-    // ====================== ZEGAR ======================
-    var time by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
+    // ======================= PAYMENT VM =======================
+    val paymentVM: PaymentViewModel = viewModel()
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            val now = Date()
-            time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(now)
-            date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(now)
-            delay(1000)
+    val launcher = rememberLauncherForActivityResult(
+        contract = ImplementationApi.createTransactionResultContract()
+    ) { result: Result<TransactionRecord> ->
+
+        if (result.success) {
+            paymentVM.onResult(result.data)
+        } else {
+            Log.e("PAYMENT", "Transaction failed: ${result.problems}")
+            paymentVM.onResult(null)
         }
     }
 
-    // ====================== UI ======================
+
+
+    // ======================= OBSŁUGA PŁATNOŚCI =======================
+    LaunchedEffect(Unit) {
+        paymentVM.lastRecord.collectLatest { record ->
+
+            if (record == null) return@collectLatest
+
+            when (record.status) {
+
+                TransactionStatus.APPROVED ->
+                    navController.navigate(
+                        Screen.TicketSuccess.pass(record.amount / 100.0)
+                    )
+
+                TransactionStatus.DENIED ->
+                    navController.navigate(Screen.TicketFail.route)
+
+                TransactionStatus.UNKNOWN ->
+                    navController.navigate(Screen.TicketCancelled.route)
+            }
+
+            paymentVM.clear()
+        }
+    }
+
+    // ======================= LICZNIKI =======================
+    var normalCount by remember { mutableStateOf(0) }
+    var reducedCount by remember { mutableStateOf(0) }
+
+    val priceNormal = 3.20
+    val priceReduced = 1.60
+    val totalPrice = normalCount * priceNormal + reducedCount * priceReduced
+
+    // ======================= UI =======================
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0A1A24))
     ) {
 
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
 
-            // =======================================================
-            //                       HEADER
-            // =======================================================
-            // ------------------- GÓRNY PASEK -------------------
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF0A1A24))
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            TopPaymentHeader()
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(R.drawable.visa),
-                        contentDescription = null,
-                        modifier = Modifier.size(80.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Image(
-                        painter = painterResource(R.drawable.mastercard),
-                        contentDescription = null,
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
+            StopsSection(
+                boardingStop = boardingStop,
+                alightingStop = alightingStop
+            )
 
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = time,
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFAFE1FF)
-                    )
-                    Text(
-                        text = date,
-                        fontSize = 24.sp,
-                        color = Color.White
-                    )
-                }
-            }
+            Spacer(Modifier.height(24.dp))
 
-            Spacer(Modifier.height(12.dp))
-
-            // =======================================================
-            //                       LISTA BILETÓW
-            // =======================================================
             Column(
-                modifier = Modifier
+                Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
 
-                // BILET NORMALNY
                 TicketCounter(
                     label = stringResource(R.string.ticket_normal),
-                    price = String.format("%.2f zł", priceNormal),
+                    price = "%.2f zł".format(priceNormal),
                     count = normalCount,
-                    onMinus = {
-                        SoundManager.playClick()
-                        if (normalCount > 0) normalCount--
-                    },
-                    onPlus = {
-                        SoundManager.playClick()
-                        normalCount++
-                    }
+                    onMinus = { if (normalCount > 0) normalCount-- },
+                    onPlus = { normalCount++ }
                 )
 
                 Spacer(Modifier.height(16.dp))
 
-                // BILET ULGOWY
                 TicketCounter(
                     label = stringResource(R.string.ticket_reduced),
-                    price = String.format("%.2f zł", priceReduced),
+                    price = "%.2f zł".format(priceReduced),
                     count = reducedCount,
-                    onMinus = {
-                        SoundManager.playClick()
-                        if (reducedCount > 0) reducedCount--
-                    },
-                    onPlus = {
-                        SoundManager.playClick()
-                        reducedCount++
-                    }
+                    onMinus = { if (reducedCount > 0) reducedCount-- },
+                    onPlus = { reducedCount++ }
                 )
 
                 Spacer(Modifier.height(24.dp))
 
-                // =======================================================
-                //                       SUMA DO ZAPŁATY
-                // =======================================================
+                Text(stringResource(R.string.total_to_pay), color = Color.White, fontSize = 24.sp)
                 Text(
-                    text = stringResource(R.string.total_to_pay)+":",
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-
-                Text(
-                    text = String.format("%.2f zł", totalPrice),
+                    "%.2f zł".format(totalPrice),
                     color = Color(0xFFAFE1FF),
                     fontSize = 36.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    fontWeight = FontWeight.Bold
                 )
-
 
                 Spacer(Modifier.height(24.dp))
 
-                // =======================================================
-                //                       PRZYCISKI POD SUMĄ
-                // =======================================================
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                Row(Modifier.fillMaxWidth()) {
 
-                    // WSTECZ
                     Button(
-                        onClick = {
-                            SoundManager.playClick()
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(70.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3B4F63)
-                        )
+                        onClick = { navController.popBackStack() },
+                        colors = ButtonDefaults.buttonColors(Color(0xFF3B4F63)),
+                        modifier = Modifier.weight(1f).height(70.dp)
                     ) {
-                        Text(
-                            "‹ "+stringResource(R.string.back_button),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
+                        Text("‹ " + stringResource(R.string.back_button),
+                            color = Color.White, fontSize = 24.sp)
                     }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(Modifier.width(12.dp))
 
-                    // ZAKUP
                     Button(
                         onClick = {
-                            SoundManager.playClick()
-                            // TODO implement payment
+                            if (totalPrice > 0) {
+                                paymentVM.startPayment(
+                                    launcher,
+                                    (totalPrice * 100).toInt()
+                                )
+                            }
                         },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(70.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF577CA0)
-                        )
+                        colors = ButtonDefaults.buttonColors(Color(0xFF577CA0)),
+                        modifier = Modifier.weight(1f).height(70.dp)
                     ) {
-                        Text(
-                            stringResource(R.string.purchase_button),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Text(stringResource(R.string.purchase_button),
+                            color = Color.White, fontSize = 24.sp)
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.weight(1f))
         }
-        // ======================= LOGA NA DOLE =======================
-        BottomLogosBar(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-        )
     }
 }

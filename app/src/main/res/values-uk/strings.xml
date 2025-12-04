@@ -1,17 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KRG13_Dev</string>
+
     <string name="entry_stop">ПОСАДКОВА ЗУПИНКА</string>
     <string name="exit_stop">ВИХІДНА ЗУПИНКА</string>
 
     <string name="ticket_normal">ЗВИЧАЙНИЙ КВИТОК</string>
     <string name="ticket_reduced">ПІЛЬГОВИЙ КВИТОК</string>
     <string name="ticket_multi">КУПІВЛЯ КІЛЬКОХ КВИТКІВ</string>
+    <string name="ticket_check_purchased">ПЕРЕВІРИТИ ПРИДБАНИЙ КВИТОК</string>
+
 
     <string name="total_to_pay">ДО ОПЛАТИ</string>
     <string name="back_button">НАЗАД</string>
     <string name="purchase_button">КУПИТИ</string>
 
+    <!-- Payment result screens -->
+    <string name="ticket_success_title">ЕЛЕКТРОННИЙ КВИТОК\nПРИДБАНО</string>
+    <string name="ticket_success_amount">Списано %1$s zł</string>
+    <string name="ticket_check_result_title">Dane zapisanej karty</string>
+
+    <string name="ticket_fail_title">КВИТОК НЕ\nБУЛО ПРИДБАНО</string>
+    <string name="ticket_fail_reason">Недійсна картка або\nнедостатньо коштів</string>
+
+    <string name="ticket_cancelled_title">ПОКУПКУ КВИТКА\nСКАСОВАНО</string>
+
+    <string name="icon_success">✔️</string>
+    <string name="icon_fail">❌</string>
+    <string name="icon_cancel">❌</string>
+
+    <!-- Languages -->
     <string name="lang_pl">Польська</string>
     <string name="lang_en">Англійська</string>
     <string name="lang_de">Німецька</string>
