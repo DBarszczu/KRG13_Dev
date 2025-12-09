@@ -16,4 +16,5 @@ sealed class Screen(val route: String) {
 
     object NetDebug : Screen("debug_network")
     object NetDebug2 : Screen("debug2")
+    object Tariff : Screen("tariff")
 }

@@ -6,6 +6,8 @@ import com.rg.krg13_dev.autocomputer.parser.CourseParameter
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.Stop
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
+import com.rg.krg13_dev.autocomputer.tariff.TariffParser
+import com.rg.krg13_dev.autocomputer.tariff.TariffTable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.net.DatagramPacket
@@ -31,18 +33,34 @@ class AutoComputerViewModel : ViewModel() {
     private val _stops = MutableStateFlow<List<Stop>>(emptyList())
     val stops: StateFlow<List<Stop>> get() = _stops
 
+    // 🔥 NOWE — TARYFA
+    private val _tariff = MutableStateFlow<TariffTable?>(null)
+    val tariff: StateFlow<TariffTable?> get() = _tariff
+
+    fun updateTariff(table: TariffTable) {
+        _tariff.value = table
+    }
+
+    fun onNewTariff(rawBytes: ByteArray) {
+        try {
+            val parsed = TariffParser.parse(rawBytes)
+            updateTariff(parsed)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
     // 🔌 komunikacja
-    // UWAGA: na starcie ma być "brak komunikacji"
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> get() = _isConnected
 
-    // 🔒 blokada "Kontrola Biletów"
+    // 🔒 blokada
     private val _isLocked = MutableStateFlow(false)
     val isLocked: StateFlow<Boolean> get() = _isLocked
 
-    // logika opóźnienia wykrycia braku komunikacji
     private var disconnectTimestamp = 0L
-    private val disconnectDelay = 5000L // 5 sekund
+    private val disconnectDelay = 5000L
 
 
     // ----------------------------------------------------
@@ -67,28 +85,14 @@ class AutoComputerViewModel : ViewModel() {
 
 
     // ----------------------------------------------------
-    // CALLBACKI Z MANAGERA – WOŁANE PRZEZ AutoComputerManager
+    // CALLBACKI – z AutoComputerManager
     // ----------------------------------------------------
 
-    /**
-     * Odebrano ramkę UDP → komunikacja OK.
-     *
-     * WYMAGANIE:
-     * - po powrocie komunikacji blokada ma być zdjęta
-     *   (DEVICE_LOCKED_FLAG = false, ekran blokady znika)
-     */
     fun onCommunicationRestored() {
         disconnectTimestamp = 0L
 
-        // jeżeli wracamy z "braku komunikacji", to upewniamy się,
-        // że blokada jest zdjęta logicznie i w statusie
         if (!_isConnected.value) {
-            // UI – zdejmujemy ewentualną blokadę
-            if (_isLocked.value) {
-                _isLocked.value = false
-            }
-
-            // STATUS – zdejmujemy flagę DEVICE_LOCKED_FLAG
+            if (_isLocked.value) _isLocked.value = false
             statusManager.setFlag("DEVICE_LOCKED_FLAG", false)
             statusManager.updateStatusFlags(status)
         }
@@ -96,48 +100,27 @@ class AutoComputerViewModel : ViewModel() {
         _isConnected.value = true
     }
 
-    /**
-     * Wywoływane przez watchdog w AutoComputerManager, gdy długo nie ma ramek.
-     *
-     * WYMAGANIE:
-     * - jeśli kasownik był zablokowany, a potem nie ma komunikacji:
-     *   → blokada ma zniknąć
-     *   → ma pojawić się "brak komunikacji"
-     */
     fun onNoCommunication() {
         if (disconnectTimestamp == 0L) {
-            // pierwsze wykrycie – start odliczania
             disconnectTimestamp = System.currentTimeMillis()
             return
         }
 
-        val elapsed = System.currentTimeMillis() - disconnectTimestamp
-
-        if (elapsed >= disconnectDelay) {
-            // już jesteśmy w stanie "brak komunikacji" – nic więcej nie rób
+        if (System.currentTimeMillis() - disconnectTimestamp >= disconnectDelay) {
             if (!_isConnected.value) return
 
-            // przechodzimy w stan braku komunikacji:
-            // 1) zdejmujemy blokadę w UI
-            if (_isLocked.value) {
-                _isLocked.value = false
-            }
-
-            // 2) zdejmujemy flagę DEVICE_LOCKED_FLAG w statusie
+            if (_isLocked.value) _isLocked.value = false
             statusManager.setFlag("DEVICE_LOCKED_FLAG", false)
             statusManager.updateStatusFlags(status)
 
-            // 3) ustawiamy brak komunikacji
             _isConnected.value = false
         }
     }
 
-    /** Komenda LOCK (0x05) – z AutoComputerManager */
     fun onDeviceLocked() {
         _isLocked.value = true
     }
 
-    /** Komenda UNLOCK (0x06) – z AutoComputerManager */
     fun onDeviceUnlocked() {
         _isLocked.value = false
     }
@@ -172,8 +155,9 @@ class AutoComputerViewModel : ViewModel() {
 
 
     // ----------------------------------------------------
-    // RĘCZNE BLOKOWANIE (opcjonalne z UI)
+    // RĘCZNE BLOKOWANIE
     // ----------------------------------------------------
+
     fun onLock() { _isLocked.value = true }
     fun onUnlock() { _isLocked.value = false }
 }

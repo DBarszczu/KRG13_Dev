@@ -133,13 +133,25 @@ fun MultiTicketScreen(navController: NavHostController) {
 
                 Spacer(Modifier.height(24.dp))
 
-                Text(stringResource(R.string.total_to_pay), color = Color.White, fontSize = 24.sp)
-                Text(
-                    "%.2f zł".format(totalPrice),
-                    color = Color(0xFFAFE1FF),
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        stringResource(R.string.total_to_pay),
+                        color = Color.White,
+                        fontSize = 24.sp
+                    )
+
+                    Text(
+                        "%.2f zł".format(totalPrice),
+                        color = Color(0xFFAFE1FF),
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+
 
                 Spacer(Modifier.height(24.dp))
 

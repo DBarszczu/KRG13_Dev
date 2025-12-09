@@ -8,6 +8,8 @@ import java.net.SocketException
 import java.nio.charset.Charset
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
+import com.rg.krg13_dev.autocomputer.tariff.TariffParser
+import com.rg.krg13_dev.autocomputer.tariff.TariffParserDebug
 import java.util.Calendar
 
 
@@ -276,39 +278,40 @@ class AutoComputerManager(
     private fun sendTariff(packet: DatagramPacket, socket: DatagramSocket, hex: String) {
 
         try {
+            // 1. Surowe dane z pakietu
             val dataBytes = packet.data.copyOf(packet.length)
 
-            // ASCII (czytelne znaki)
-            val ascii = String(dataBytes, charset)
-                .trim('\u0000', '\r', '\n')
+            Log.d(
+                "TARIFF_RAW",
+                "Odebrane bajty (${packet.length}): ${
+                    dataBytes.joinToString(", ") { it.toUByte().toString() }
+                }"
+            )
 
-            // BIN — każdy bajt w formacie 8-bitowym
-            val binary = dataBytes.joinToString(" ") {
-                String.format("%8s", it.toUByte().toString(2)).replace(' ', '0')
+            // 2. Właściwa taryfa zaczyna się od bajtu 1
+            if (packet.length > 1) {
+                val payload = dataBytes.copyOfRange(1, packet.length)
+
+                // 🔥 PRODUKCYJNE PARSOWANIE
+                val table = TariffParser.parse(payload)
+
+                // 🔥 Zapisanie wyniku do ViewModelu → UI zobaczy taryfę
+                viewModel.updateTariff(table)
             }
 
-            Log.d("TARIFF", "================= TARYFA =================")
-            Log.d("TARIFF", "Długość pakietu: ${packet.length} bajtów")
-
-            Log.d("TARIFF", "HEX:")
-            Log.d("TARIFF", hex)
-
-            Log.d("TARIFF", "ASCII:")
-            Log.d("TARIFF", ascii)
-
-            Log.d("TARIFF", "BIN (8-bit):")
-            Log.d("TARIFF", binary)
-
-            Log.d("TARIFF", "==========================================")
+            // 3. Aktualizacja flag
+            statusManager.setFlag("MISSING_TARIFF_TABLE_FLAG", false)
+            statusManager.updateStatusFlags(status)
 
         } catch (e: Exception) {
-            Log.e("TARIFF", "Błąd parsowania taryfy: ${e.message}")
+            Log.e("TARIFF", "Błąd przetwarzania taryfy: ${e.message}", e)
         }
 
-        statusManager.setFlag("MISSING_TARIFF_TABLE_FLAG", false)
-        statusManager.updateStatusFlags(status)
+        // 4. Odesłanie odpowiedzi
         sendSimple(packet, socket, AcAnswer.ANS_SAVE_TARIFF_TABLE)
     }
+
+
 
 
 
