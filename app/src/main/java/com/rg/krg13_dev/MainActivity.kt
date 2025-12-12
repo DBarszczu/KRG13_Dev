@@ -22,7 +22,7 @@ import com.rg.krg13_dev.utils.SoundManager
 class MainActivity : ComponentActivity() {
 
     companion object {
-        private const val IDLE_TIMEOUT = 30_000L // 30 sekund
+        private const val IDLE_TIMEOUT = 60_000L // 60 sekund
     }
 
     private val idleHandler = Handler(Looper.getMainLooper())

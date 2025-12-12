@@ -6,9 +6,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rg.krg13_dev.utils.SystemInfo
@@ -16,10 +16,11 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeviceInfoScreen(onContinue: () -> Unit) {
+fun DeviceInfoScreen(
+    onContinue: () -> Unit
+) {
 
     val context = LocalContext.current
-
     var hold by remember { mutableStateOf(false) }
 
     val appVersion = remember { SystemInfo.getAppVersion(context) }
@@ -44,7 +45,13 @@ fun DeviceInfoScreen(onContinue: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Device Info", fontSize = 26.sp) }
+                title = {
+                    Text(
+                        "Device Info",
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             )
         }
     ) { padding ->
@@ -59,38 +66,33 @@ fun DeviceInfoScreen(onContinue: () -> Unit) {
         ) {
 
             ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium
+                modifier = Modifier.fillMaxWidth()
             ) {
-
                 Column(modifier = Modifier.padding(20.dp)) {
 
                     InfoItem("Application version", appVersion)
-
                     InfoItem("Firmware version", firmware)
-                    InfoItem("Compilation date/time", coreDate)
+                    InfoItem("Compilation date / time", coreDate)
                     InfoItem("Communication protocol", protocol)
                     InfoItem("Device address (MAC)", mac)
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(18.dp))
 
                     Text(
-                        "Ethernet configuration",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        text = "Ethernet configuration",
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
                     )
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(10.dp))
 
-                    Text("IP address: $ip")
-                    Text("Netmask: $netmask")
-                    Text("Gateway: $gateway")
-                    Text("FTP IP: Unknown")
-                    Text("TCP port: Unknown")
+                    NetworkItem("IP address", ip)
+                    NetworkItem("Netmask", netmask)
+                    NetworkItem("Gateway", gateway)
+                    NetworkItem("FTP IP", "Unknown")
+                    NetworkItem("TCP port", "Unknown")
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(18.dp))
 
                     InfoItem("Core date", coreDate)
                     InfoItem("Android TS version", androidVersion)
@@ -98,15 +100,19 @@ fun DeviceInfoScreen(onContinue: () -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(28.dp))
 
             Button(
-                onClick = { if (!hold) hold = true else onContinue() },
-                modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    if (!hold) hold = true else onContinue()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
             ) {
                 Text(
-                    if (!hold) "HOLD" else "RELEASE",
-                    fontSize = 26.sp,
+                    text = if (!hold) "HOLD" else "RELEASE",
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -114,14 +120,49 @@ fun DeviceInfoScreen(onContinue: () -> Unit) {
     }
 }
 
+// ================= COMPONENTS =================
+
 @Composable
-private fun InfoItem(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
+private fun InfoItem(
+    label: String,
+    value: String
+) {
+    Column(modifier = Modifier.padding(vertical = 5.dp)) {
+
         Text(
-            value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            text = label,
+            fontSize = 17.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Text(
+            text = value,
+            fontSize = 21.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun NetworkItem(
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            fontSize = 19.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 }
