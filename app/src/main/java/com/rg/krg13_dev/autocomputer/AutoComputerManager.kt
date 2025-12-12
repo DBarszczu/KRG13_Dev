@@ -8,8 +8,6 @@ import java.net.SocketException
 import java.nio.charset.Charset
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
-import com.rg.krg13_dev.autocomputer.tariff.TariffParser
-import com.rg.krg13_dev.autocomputer.tariff.TariffParserDebug
 import java.util.Calendar
 
 
@@ -233,9 +231,9 @@ class AutoComputerManager(
         val resp = ByteArray(31)
         resp[0] = AcAnswer.ANS_READ_SOFTWARE_VERSION.code.toByte()
 
-        "v100jz".toByteArray().copyInto(resp, 1)
-        "Apr 15 202513:42:25".toByteArray().copyInto(resp, 7)
-        "50013".toByteArray().copyInto(resp, 26)
+        "v100db".toByteArray().copyInto(resp, 1)
+        "Jun 3 2025 12:12:12".toByteArray().copyInto(resp, 7)
+        "666".toByteArray().copyInto(resp, 26)
 
         socket.send(DatagramPacket(resp, resp.size, packet.address, packet.port))
     }
@@ -287,17 +285,6 @@ class AutoComputerManager(
                     dataBytes.joinToString(", ") { it.toUByte().toString() }
                 }"
             )
-
-            // 2. Właściwa taryfa zaczyna się od bajtu 1
-            if (packet.length > 1) {
-                val payload = dataBytes.copyOfRange(1, packet.length)
-
-                // 🔥 PRODUKCYJNE PARSOWANIE
-                val table = TariffParser.parse(payload)
-
-                // 🔥 Zapisanie wyniku do ViewModelu → UI zobaczy taryfę
-                viewModel.updateTariff(table)
-            }
 
             // 3. Aktualizacja flag
             statusManager.setFlag("MISSING_TARIFF_TABLE_FLAG", false)

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.rg.krg13_dev.autocomputer.ui.TariffScreen
 import com.rg.krg13_dev.screens.debug.NetDebug2Screen
 import com.rg.krg13_dev.screens.debug.NetDebugScreen
 import com.rg.krg13_dev.screens.deviceInfo.DeviceInfoScreen
@@ -23,7 +22,7 @@ fun AppNavHost(navController: NavHostController) {
     ) {
         composable(Screen.DeviceInfo.route) {
             DeviceInfoScreen(onContinue = {
-                navController.navigate(Screen.Tariff.route) {
+                navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.DeviceInfo.route) { inclusive = true }
                 }
             })
@@ -59,6 +58,5 @@ fun AppNavHost(navController: NavHostController) {
 
         composable(Screen.NetDebug.route) { NetDebugScreen() }
         composable(Screen.NetDebug2.route) { NetDebug2Screen() }
-        composable(Screen.Tariff.route) { TariffScreen() }
     }
 }

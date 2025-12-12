@@ -24,6 +24,7 @@ import com.rg.krg13_dev.R
 import com.rg.krg13_dev.autocomputer.AutoComputerViewModel
 import com.rg.krg13_dev.navigation.Screen
 import com.rg.krg13_dev.pinappall.PaymentViewModel
+import com.rg.krg13_dev.ui.components.BottomLogosBar
 import com.rg.krg13_dev.ui.components.TicketCounter
 import com.rg.krg13_dev.ui.components.TopPaymentHeader
 import com.rg.krg13_dev.ui.components.StopsSection
@@ -187,6 +188,7 @@ fun MultiTicketScreen(navController: NavHostController) {
             }
 
             Spacer(modifier = Modifier.weight(1f))
+            BottomLogosBar(Modifier.fillMaxWidth())
         }
     }
 }

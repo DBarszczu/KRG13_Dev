@@ -6,8 +6,6 @@ import com.rg.krg13_dev.autocomputer.parser.CourseParameter
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.Stop
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
-import com.rg.krg13_dev.autocomputer.tariff.TariffParser
-import com.rg.krg13_dev.autocomputer.tariff.TariffTable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.net.DatagramPacket
@@ -32,23 +30,6 @@ class AutoComputerViewModel : ViewModel() {
 
     private val _stops = MutableStateFlow<List<Stop>>(emptyList())
     val stops: StateFlow<List<Stop>> get() = _stops
-
-    // 🔥 NOWE — TARYFA
-    private val _tariff = MutableStateFlow<TariffTable?>(null)
-    val tariff: StateFlow<TariffTable?> get() = _tariff
-
-    fun updateTariff(table: TariffTable) {
-        _tariff.value = table
-    }
-
-    fun onNewTariff(rawBytes: ByteArray) {
-        try {
-            val parsed = TariffParser.parse(rawBytes)
-            updateTariff(parsed)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
 
 
     // 🔌 komunikacja
