@@ -1,6 +1,7 @@
 package com.rg.krg13_dev.autocomputer
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.rg.krg13_dev.autocomputer.parser.CourseParameter
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
@@ -8,9 +9,13 @@ import com.rg.krg13_dev.autocomputer.parser.Stop
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.net.DatagramPacket
 
-class AutoComputerViewModel : ViewModel() {
+class AutoComputerViewModel(
+    application: Application
+) : AndroidViewModel(application) {
 
     // ----------------------------------------------------
     // PODSTAWOWE OBIEKTY
@@ -19,7 +24,6 @@ class AutoComputerViewModel : ViewModel() {
     val status = AutoComputerStatus()
     val statusManager = AutoComputerStatusManager()
     val data = Data()
-
 
     // ----------------------------------------------------
     // STANY DLA UI
@@ -31,24 +35,27 @@ class AutoComputerViewModel : ViewModel() {
     private val _stops = MutableStateFlow<List<Stop>>(emptyList())
     val stops: StateFlow<List<Stop>> get() = _stops
 
-
     // 🔌 komunikacja
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> get() = _isConnected
 
-    // 🔒 blokada
+    // 🔒 ręczna blokada (LOCK / UNLOCK z autokomputera)
     private val _isLocked = MutableStateFlow(false)
     val isLocked: StateFlow<Boolean> get() = _isLocked
 
+    // 🔒 GLOBALNA blokada UI (TO JEST KLUCZ)
+    private val _isUiBlocked = MutableStateFlow(true)
+    val isUiBlocked: StateFlow<Boolean> get() = _isUiBlocked
+
     private var disconnectTimestamp = 0L
     private val disconnectDelay = 5000L
-
 
     // ----------------------------------------------------
     // MANAGER UDP
     // ----------------------------------------------------
 
     private val manager = AutoComputerManager(
+        context = application.applicationContext,
         statusManager = statusManager,
         status = status,
         data = data,
@@ -57,6 +64,13 @@ class AutoComputerViewModel : ViewModel() {
 
     init {
         manager.start(viewModelScope)
+
+        // 🔑 REAKCJA NA ZMIANĘ FLAG PROTOKOŁU
+        viewModelScope.launch {
+            DeviceStateHolder.isDeviceLocked_NoCommunication.collectLatest {
+                updateUiBlockedState()
+            }
+        }
     }
 
     override fun onCleared() {
@@ -64,6 +78,15 @@ class AutoComputerViewModel : ViewModel() {
         manager.stop()
     }
 
+    // ----------------------------------------------------
+    // CENTRALNA LOGIKA BLOKADY UI
+    // ----------------------------------------------------
+
+    private fun updateUiBlockedState() {
+        _isUiBlocked.value =
+            !_isConnected.value ||
+                    DeviceStateHolder.isDeviceLocked_NoCommunication.value
+    }
 
     // ----------------------------------------------------
     // CALLBACKI – z AutoComputerManager
@@ -71,31 +94,25 @@ class AutoComputerViewModel : ViewModel() {
 
     fun onCommunicationRestored() {
         disconnectTimestamp = 0L
-
-        if (!_isConnected.value) {
-            if (_isLocked.value) _isLocked.value = false
-            statusManager.setFlag("DEVICE_LOCKED_FLAG", false)
-            statusManager.updateStatusFlags(status)
-        }
-
         _isConnected.value = true
+        updateUiBlockedState()
     }
 
     fun onNoCommunication() {
+
         if (disconnectTimestamp == 0L) {
             disconnectTimestamp = System.currentTimeMillis()
             return
         }
 
-        if (System.currentTimeMillis() - disconnectTimestamp >= disconnectDelay) {
-            if (!_isConnected.value) return
-
-            if (_isLocked.value) _isLocked.value = false
-            statusManager.setFlag("DEVICE_LOCKED_FLAG", false)
-            statusManager.updateStatusFlags(status)
-
-            _isConnected.value = false
+        if (System.currentTimeMillis() - disconnectTimestamp < disconnectDelay) {
+            return
         }
+
+        if (!_isConnected.value) return
+
+        _isConnected.value = false
+        updateUiBlockedState()
     }
 
     fun onDeviceLocked() {
@@ -105,7 +122,6 @@ class AutoComputerViewModel : ViewModel() {
     fun onDeviceUnlocked() {
         _isLocked.value = false
     }
-
 
     // ----------------------------------------------------
     // DANE KURSU - SETJ
@@ -120,7 +136,6 @@ class AutoComputerViewModel : ViewModel() {
         _courseParams.value = parameters
     }
 
-
     // ----------------------------------------------------
     // LISTA PRZYSTANKÓW
     // ----------------------------------------------------
@@ -134,11 +149,15 @@ class AutoComputerViewModel : ViewModel() {
         _stops.value = list
     }
 
-
     // ----------------------------------------------------
     // RĘCZNE BLOKOWANIE
     // ----------------------------------------------------
 
-    fun onLock() { _isLocked.value = true }
-    fun onUnlock() { _isLocked.value = false }
+    fun onLock() {
+        _isLocked.value = true
+    }
+
+    fun onUnlock() {
+        _isLocked.value = false
+    }
 }

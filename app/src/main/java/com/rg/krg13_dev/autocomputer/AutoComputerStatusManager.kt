@@ -44,7 +44,8 @@ class AutoComputerStatusManager {
             else -> return
         }
         onFlagChanged?.invoke(flag, value)
-        checkAndLockIfAllFlagsFalse()
+        updateNoCommunicationLock()
+
     }
 
     fun updateStatusFlags(status: AutoComputerStatus) {
@@ -88,14 +89,13 @@ class AutoComputerStatusManager {
             onFlagChanged?.invoke(name, value)
         }
 
-        checkAndLockIfAllFlagsFalse()
+        updateNoCommunicationLock()
+
     }
 
-    private fun checkAndLockIfAllFlagsFalse() {
-        val allFlags = listOf(
-            DEVICE_LOCKED_FLAG,
-            REQUEST_FOR_LOCK_FLAG,
-            REQUEST_FOR_UNLOCK_FLAG,
+    private fun updateNoCommunicationLock() {
+
+        val requiredFlags = listOf(
             REQUEST_FOR_REPORT_READING_FLAG,
             REQUEST_FOR_CARD_NUMBER_READING_FLAG,
             REQUEST_FOR_INFORMATION_ON_CARRIAGE_FLAG,
@@ -112,8 +112,10 @@ class AutoComputerStatusManager {
             MISSING_CURRENT_TIME_DATA_FLAG
         )
 
-        if (allFlags.all { !it }) {
-            DeviceStateHolder.isDeviceLocked_NoCommunication.value = false
-        }
+        DeviceStateHolder.isDeviceLocked_NoCommunication.value =
+            requiredFlags.any { it }
     }
+
+
+
 }

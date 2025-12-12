@@ -34,6 +34,9 @@ fun HomeScreen(
     val context = LocalContext.current
     val autoComputerViewModel: AutoComputerViewModel =
         viewModel(context as ComponentActivity)
+    val isUiBlocked by autoComputerViewModel
+        .isUiBlocked
+        .collectAsState()
 
     val isConnected by autoComputerViewModel.isConnected.collectAsState()
     val isLocked by autoComputerViewModel.isLocked.collectAsState()
@@ -154,7 +157,9 @@ fun HomeScreen(
         }
 
         // ---------------- NAKŁADKI ----------------
-        if (!isConnected) NoCommunicationOverlay()
+        if (isUiBlocked) {
+            NoCommunicationOverlay()
+        }
         if (isLocked) TicketControlLockOverlay()
     }
 }

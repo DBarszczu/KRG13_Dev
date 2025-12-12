@@ -25,19 +25,28 @@ import com.rg.krg13_dev.autocomputer.AutoComputerViewModel
 import com.rg.krg13_dev.navigation.Screen
 import com.rg.krg13_dev.pinappall.PaymentViewModel
 import com.rg.krg13_dev.ui.components.BottomLogosBar
+import com.rg.krg13_dev.ui.components.NoCommunicationOverlay
 import com.rg.krg13_dev.ui.components.TicketCounter
 import com.rg.krg13_dev.ui.components.TopPaymentHeader
 import com.rg.krg13_dev.ui.components.StopsSection
+import com.rg.krg13_dev.ui.components.TicketControlLockOverlay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun MultiTicketScreen(navController: NavHostController) {
 
     val context = LocalContext.current
-    val autoComputer: AutoComputerViewModel =
-        viewModel(context as ComponentActivity)
 
-    val course by autoComputer.courseParams.collectAsState()
+    val autoComputerViewModel: AutoComputerViewModel =
+        viewModel(context as ComponentActivity)
+    val isUiBlocked by autoComputerViewModel
+        .isUiBlocked
+        .collectAsState()
+
+    val isLocked by autoComputerViewModel.isLocked.collectAsState()
+
+
+    val course by autoComputerViewModel.courseParams.collectAsState()
     val boardingStop = course?.T_boardingStopName ?: "-"
     val alightingStop = course?.t_alightingStopName ?: "-"
 
@@ -190,5 +199,13 @@ fun MultiTicketScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.weight(1f))
             BottomLogosBar(Modifier.fillMaxWidth())
         }
+        if (isUiBlocked) {
+            NoCommunicationOverlay()
+        }
+
+        if (isLocked) {
+            TicketControlLockOverlay()
+        }
+
     }
 }

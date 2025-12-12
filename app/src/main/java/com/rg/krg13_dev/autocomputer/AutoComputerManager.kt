@@ -1,5 +1,6 @@
 package com.rg.krg13_dev.autocomputer
 
+import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.*
 import java.net.DatagramPacket
@@ -8,10 +9,14 @@ import java.net.SocketException
 import java.nio.charset.Charset
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
+import com.rg.krg13_dev.utils.saveBlackListToFile
+import com.rg.krg13_dev.utils.saveTariffToFile
+
 import java.util.Calendar
 
 
 class AutoComputerManager(
+    private val context: Context,
     private val statusManager: AutoComputerStatusManager,
     private val status: AutoComputerStatus,
     private val data: Data,
@@ -102,8 +107,8 @@ class AutoComputerManager(
             AcRequest.REQ_SAVE_STOPS_LIST -> sendSaveStops(packet, socket, hex)
 
             AcRequest.REQ_READ_REPORT -> sendReport(packet, socket)
-            AcRequest.REQ_SAVE_TARIFF_TABLE -> sendTariff(packet, socket, hex)
-            AcRequest.REQ_SAVE_BLACK_LIST -> sendBlackList(packet, socket, hex)
+            AcRequest.REQ_SAVE_TARIFF_TABLE -> sendTariff(context, packet, socket, hex)
+            AcRequest.REQ_SAVE_BLACK_LIST -> sendBlackList(context, packet, socket, hex)
 
             AcRequest.REQ_READ_CARD_NUMBER_INFO -> sendCardInfo(packet, socket)
             AcRequest.REQ_SAVE_RAIL_COURSE_PARAMETER -> sendRailCourse(packet, socket, ascii)
@@ -273,8 +278,12 @@ class AutoComputerManager(
     }
 
 
-    private fun sendTariff(packet: DatagramPacket, socket: DatagramSocket, hex: String) {
-
+    private fun sendTariff(
+        context: Context,
+        packet: DatagramPacket,
+        socket: DatagramSocket,
+        hex: String
+    ) {
         try {
             // 1. Surowe dane z pakietu
             val dataBytes = packet.data.copyOf(packet.length)
@@ -286,27 +295,96 @@ class AutoComputerManager(
                 }"
             )
 
-            // 3. Aktualizacja flag
+            // ✅ 2. WALIDACJA – czy przyszły realne dane
+            if (dataBytes.size <= 1) {
+                Log.w(
+                    "TARIFF",
+                    "Odebrano niepełne dane taryfy (${dataBytes.size} bajt) – oczekiwanie na pełną tabelę"
+                )
+
+                // ❗ NIE ustawiamy flag
+                // ❗ NIE zapisujemy pliku
+                // ❗ Nadal czekamy na poprawne dane
+
+                return
+            }
+
+            // ✅ 3. ZAPIS DO PLIKU (dopiero gdy dane są poprawne)
+            saveTariffToFile(context.applicationContext, dataBytes)
+
+            // ✅ 4. Aktualizacja flag – TYLKO gdy dane OK
             statusManager.setFlag("MISSING_TARIFF_TABLE_FLAG", false)
             statusManager.updateStatusFlags(status)
+
+            Log.i(
+                "TARIFF",
+                "Poprawna tabela taryf odebrana (${dataBytes.size} bajtów)"
+            )
 
         } catch (e: Exception) {
             Log.e("TARIFF", "Błąd przetwarzania taryfy: ${e.message}", e)
         }
 
-        // 4. Odesłanie odpowiedzi
+        // 5. Odesłanie odpowiedzi (zgodnie z protokołem)
         sendSimple(packet, socket, AcAnswer.ANS_SAVE_TARIFF_TABLE)
     }
 
 
+    private fun sendBlackList(
+        context: Context,
+        packet: DatagramPacket,
+        socket: DatagramSocket,
+        hex: String
+    ) {
+        try {
+            // 1. Surowe dane z pakietu
+            val dataBytes = packet.data.copyOf(packet.length)
 
+            Log.d(
+                "BLACKLIST_RAW",
+                "Odebrane bajty (${packet.length}): ${
+                    dataBytes.joinToString(", ") { it.toUByte().toString() }
+                }"
+            )
 
+            // 2. WALIDACJA – czy przyszły realne dane
+            if (dataBytes.size <= 1) {
+                Log.w(
+                    "BLACKLIST",
+                    "Odebrano niepełne dane blacklisty (${dataBytes.size} bajt) – oczekiwanie na pełną listę"
+                )
 
-    private fun sendBlackList(packet: DatagramPacket, socket: DatagramSocket, hex: String) {
-        statusManager.setFlag("MISSING_BLACKLIST_FLAG", false)
-        statusManager.updateStatusFlags(status)
+                // ❗ NIE ustawiamy flag
+                // ❗ NIE zapisujemy pliku
+                // ❗ Czekamy na poprawne dane
+
+                return
+            }
+
+            // 3. ZAPIS DO PLIKU (dopiero gdy dane są poprawne)
+            saveBlackListToFile(context.applicationContext, dataBytes)
+
+            // 4. Aktualizacja flag – TYLKO gdy dane OK
+            statusManager.setFlag("MISSING_BLACKLIST_FLAG", false)
+            statusManager.updateStatusFlags(status)
+
+            Log.i(
+                "BLACKLIST",
+                "Poprawna blacklista odebrana (${dataBytes.size} bajtów)"
+            )
+
+        } catch (e: Exception) {
+            Log.e(
+                "BLACKLIST",
+                "Błąd przetwarzania blacklisty: ${e.message}",
+                e
+            )
+        }
+
+        // 5. Odesłanie odpowiedzi (zgodnie z protokołem)
         sendSimple(packet, socket, AcAnswer.ANS_SAVE_BLACK_LIST)
     }
+
 
 
     // ============================================================
