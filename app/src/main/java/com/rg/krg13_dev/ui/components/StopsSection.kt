@@ -33,13 +33,13 @@ fun StopsSection(
         Text(
             text = stringResource(R.string.entry_stop),
             color = Color(0xFF8FB4D8),
-            fontSize = 16.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = boardingStop,
             color = Color.White,
-            fontSize = 22.sp
+            fontSize = 26.sp
         )
 
         Spacer(Modifier.height(12.dp))
@@ -47,13 +47,13 @@ fun StopsSection(
         Text(
             text = stringResource(R.string.exit_stop),
             color = Color(0xFF8FB4D8),
-            fontSize = 16.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = alightingStop,
             color = Color.White,
-            fontSize = 22.sp
+            fontSize = 26.sp
         )
     }
 }

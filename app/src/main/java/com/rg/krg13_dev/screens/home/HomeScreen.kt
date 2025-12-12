@@ -24,6 +24,7 @@ import com.rg.krg13_dev.navigation.Screen
 import com.rg.krg13_dev.pinappall.PaymentViewModel
 import com.rg.krg13_dev.ui.components.*
 import com.rg.krg13_dev.utils.SoundManager
+import com.rg.krg13_dev.utils.formatPrice
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -37,6 +38,17 @@ fun HomeScreen(
     val isUiBlocked by autoComputerViewModel
         .isUiBlocked
         .collectAsState()
+    val bankPrices by autoComputerViewModel
+        .bankTicketPrices
+        .collectAsState()
+
+    val normalPriceGrosz = bankPrices?.first ?: 0
+    val reducedPriceGrosz = bankPrices?.second ?: 0
+
+    val normalPriceText = formatPrice(normalPriceGrosz)
+    val reducedPriceText = formatPrice(reducedPriceGrosz)
+
+    val hasTariff = bankPrices != null
 
     val isConnected by autoComputerViewModel.isConnected.collectAsState()
     val isLocked by autoComputerViewModel.isLocked.collectAsState()
@@ -113,25 +125,28 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp)
                 ) {
 
-                    // 🔵 BILET NORMALNY — szybki zakup
                     TicketButton(
                         title = stringResource(R.string.ticket_normal),
-                        price = "3.20 zł"
+                        price = normalPriceText
                     ) {
+                        if (!hasTariff) return@TicketButton
                         SoundManager.playClick()
-                        paymentVM.startPayment(launcher, (3.20 * 100).toInt())
+                        paymentVM.startPayment(launcher, normalPriceGrosz)
                     }
+
+
 
                     Spacer(Modifier.height(12.dp))
 
-                    // 🟢 BILET ULGOWY — szybki zakup
                     TicketButton(
                         title = stringResource(R.string.ticket_reduced),
-                        price = "1.60 zł"
+                        price = reducedPriceText
                     ) {
+                        if (!hasTariff) return@TicketButton
                         SoundManager.playClick()
-                        paymentVM.startPayment(launcher, (1.60 * 100).toInt())
+                        paymentVM.startPayment(launcher, reducedPriceGrosz)
                     }
+
 
                     Spacer(Modifier.height(12.dp))
 
@@ -163,3 +178,4 @@ fun HomeScreen(
         if (isLocked) TicketControlLockOverlay()
     }
 }
+

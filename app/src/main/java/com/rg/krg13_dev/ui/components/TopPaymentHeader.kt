@@ -45,26 +45,26 @@ fun TopPaymentHeader(
             Image(
                 painter = painterResource(R.drawable.visa),
                 contentDescription = null,
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(100.dp)
             )
             Spacer(Modifier.width(8.dp))
             Image(
                 painter = painterResource(R.drawable.mastercard),
                 contentDescription = null,
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(100.dp)
             )
         }
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = time,
-                fontSize = 30.sp,
+                fontSize = 34.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFAFE1FF)
             )
             Text(
                 text = date,
-                fontSize = 24.sp,
+                fontSize = 28.sp,
                 color = Color.White
             )
         }

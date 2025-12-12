@@ -21,7 +21,7 @@ fun TicketButtonArrow(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp),
+            .height(100.dp),
         color = Color(0xFF223547),
         shape = RoundedCornerShape(8.dp),
         onClick = onClick
@@ -35,13 +35,13 @@ fun TicketButtonArrow(
         ) {
             Text(
                 text = title,
-                fontSize = 22.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(
                 text = "»",
-                fontSize = 30.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )

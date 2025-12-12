@@ -7,6 +7,7 @@ import com.rg.krg13_dev.autocomputer.parser.CourseParameter
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.Stop
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
+import com.rg.krg13_dev.autocomputer.parser.tariff.TariffRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -43,9 +44,16 @@ class AutoComputerViewModel(
     private val _isLocked = MutableStateFlow(false)
     val isLocked: StateFlow<Boolean> get() = _isLocked
 
-    // 🔒 GLOBALNA blokada UI (TO JEST KLUCZ)
+    // 🔒 GLOBALNA blokada UI
     private val _isUiBlocked = MutableStateFlow(true)
     val isUiBlocked: StateFlow<Boolean> get() = _isUiBlocked
+
+    // 💳 CENY BILETÓW BANKOWYCH (NORMALNY, ULGOWY) – GROSZE
+    private val _bankTicketPrices =
+        MutableStateFlow<Pair<Int, Int>?>(null)
+
+    val bankTicketPrices: StateFlow<Pair<Int, Int>?>
+        get() = _bankTicketPrices
 
     private var disconnectTimestamp = 0L
     private val disconnectDelay = 5000L
@@ -65,7 +73,6 @@ class AutoComputerViewModel(
     init {
         manager.start(viewModelScope)
 
-        // 🔑 REAKCJA NA ZMIANĘ FLAG PROTOKOŁU
         viewModelScope.launch {
             DeviceStateHolder.isDeviceLocked_NoCommunication.collectLatest {
                 updateUiBlockedState()
@@ -99,7 +106,6 @@ class AutoComputerViewModel(
     }
 
     fun onNoCommunication() {
-
         if (disconnectTimestamp == 0L) {
             disconnectTimestamp = System.currentTimeMillis()
             return
@@ -147,6 +153,15 @@ class AutoComputerViewModel(
 
     fun onNewStops(list: List<Stop>) {
         _stops.value = list
+    }
+
+    // ----------------------------------------------------
+    // TARYFA – WYWOŁYWANE Z sendTariff()
+    // ----------------------------------------------------
+
+    fun onTariffUpdated() {
+        _bankTicketPrices.value =
+            TariffRepository.getBankPrices()
     }
 
     // ----------------------------------------------------

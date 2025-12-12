@@ -30,6 +30,8 @@ import com.rg.krg13_dev.ui.components.TicketCounter
 import com.rg.krg13_dev.ui.components.TopPaymentHeader
 import com.rg.krg13_dev.ui.components.StopsSection
 import com.rg.krg13_dev.ui.components.TicketControlLockOverlay
+import com.rg.krg13_dev.utils.SoundManager
+import com.rg.krg13_dev.utils.formatPrice
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -44,6 +46,12 @@ fun MultiTicketScreen(navController: NavHostController) {
         .collectAsState()
 
     val isLocked by autoComputerViewModel.isLocked.collectAsState()
+
+    val bankPrices by autoComputerViewModel
+        .bankTicketPrices
+        .collectAsState()
+
+    val hasTariff = bankPrices != null
 
 
     val course by autoComputerViewModel.courseParams.collectAsState()
@@ -95,9 +103,15 @@ fun MultiTicketScreen(navController: NavHostController) {
     var normalCount by remember { mutableStateOf(0) }
     var reducedCount by remember { mutableStateOf(0) }
 
-    val priceNormal = 3.20
-    val priceReduced = 1.60
-    val totalPrice = normalCount * priceNormal + reducedCount * priceReduced
+    // ceny z taryfy (grosze)
+    val priceNormalGrosz = bankPrices?.first ?: 0
+    val priceReducedGrosz = bankPrices?.second ?: 0
+
+    // suma w groszach (BEZ Double!)
+    val totalPriceGrosz =
+        normalCount * priceNormalGrosz +
+                reducedCount * priceReducedGrosz
+
 
     // ======================= UI =======================
     Box(
@@ -125,21 +139,39 @@ fun MultiTicketScreen(navController: NavHostController) {
 
                 TicketCounter(
                     label = stringResource(R.string.ticket_normal),
-                    price = "%.2f zł".format(priceNormal),
+                    price = formatPrice(priceNormalGrosz),
                     count = normalCount,
-                    onMinus = { if (normalCount > 0) normalCount-- },
-                    onPlus = { normalCount++ }
+                    onMinus = {
+                        if (!hasTariff) return@TicketCounter
+                        SoundManager.playClick()
+                        if (normalCount > 0) normalCount--
+                    },
+                    onPlus = {
+                        if (!hasTariff) return@TicketCounter
+                        SoundManager.playClick()
+                        normalCount++
+                    }
                 )
+
 
                 Spacer(Modifier.height(16.dp))
 
                 TicketCounter(
                     label = stringResource(R.string.ticket_reduced),
-                    price = "%.2f zł".format(priceReduced),
+                    price = formatPrice(priceReducedGrosz),
                     count = reducedCount,
-                    onMinus = { if (reducedCount > 0) reducedCount-- },
-                    onPlus = { reducedCount++ }
+                    onMinus = {
+                        if (!hasTariff) return@TicketCounter
+                        SoundManager.playClick()
+                        if (reducedCount > 0) reducedCount--
+                    },
+                    onPlus = {
+                        if (!hasTariff) return@TicketCounter
+                        SoundManager.playClick()
+                        reducedCount++
+                    }
                 )
+
 
                 Spacer(Modifier.height(24.dp))
 
@@ -150,11 +182,12 @@ fun MultiTicketScreen(navController: NavHostController) {
                     Text(
                         stringResource(R.string.total_to_pay),
                         color = Color.White,
-                        fontSize = 24.sp
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
                     )
 
                     Text(
-                        "%.2f zł".format(totalPrice),
+                        formatPrice(totalPriceGrosz),
                         color = Color(0xFFAFE1FF),
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
@@ -168,7 +201,10 @@ fun MultiTicketScreen(navController: NavHostController) {
                 Row(Modifier.fillMaxWidth()) {
 
                     Button(
-                        onClick = { navController.popBackStack() },
+                        onClick = {
+                            SoundManager.playClick()
+                            navController.popBackStack()
+                                  },
                         colors = ButtonDefaults.buttonColors(Color(0xFF3B4F63)),
                         modifier = Modifier.weight(1f).height(70.dp)
                     ) {
@@ -180,15 +216,20 @@ fun MultiTicketScreen(navController: NavHostController) {
 
                     Button(
                         onClick = {
-                            if (totalPrice > 0) {
+                            if (!hasTariff) return@Button
+                            SoundManager.playClick()
+                            if (totalPriceGrosz > 0) {
                                 paymentVM.startPayment(
                                     launcher,
-                                    (totalPrice * 100).toInt()
+                                    totalPriceGrosz
                                 )
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(Color(0xFF577CA0)),
-                        modifier = Modifier.weight(1f).height(70.dp)
+                        enabled = hasTariff && totalPriceGrosz > 0,
+                        colors = ButtonDefaults.buttonColors(
+                            if (hasTariff) Color(0xFF577CA0) else Color(0xFF3B4F63)
+                        ),
+                                modifier = Modifier.weight(1f).height(70.dp)
                     ) {
                         Text(stringResource(R.string.purchase_button),
                             color = Color.White, fontSize = 24.sp)

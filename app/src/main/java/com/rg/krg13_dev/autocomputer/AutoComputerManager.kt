@@ -9,6 +9,11 @@ import java.net.SocketException
 import java.nio.charset.Charset
 import com.rg.krg13_dev.autocomputer.parser.SetJPars
 import com.rg.krg13_dev.autocomputer.parser.StopsParser
+import com.rg.krg13_dev.autocomputer.parser.tariff.TariffParser
+import com.rg.krg13_dev.autocomputer.parser.tariff.TariffRepository
+import com.rg.krg13_dev.autocomputer.parser.tariff.TariffUtils
+import com.rg.krg13_dev.autocomputer.parser.tariff.findTariffStartSmart
+import com.rg.krg13_dev.autocomputer.parser.tariff.u32be
 import com.rg.krg13_dev.utils.saveBlackListToFile
 import com.rg.krg13_dev.utils.saveTariffToFile
 
@@ -285,49 +290,59 @@ class AutoComputerManager(
         hex: String
     ) {
         try {
-            // 1. Surowe dane z pakietu
-            val dataBytes = packet.data.copyOf(packet.length)
+            val frame = packet.data.copyOf(packet.length)
 
-            Log.d(
-                "TARIFF_RAW",
-                "Odebrane bajty (${packet.length}): ${
-                    dataBytes.joinToString(", ") { it.toUByte().toString() }
-                }"
-            )
+            Log.i("TARIFF", "========== START ==========")
+            Log.i("TARIFF", "FRAME SIZE = ${frame.size}")
 
-            // ✅ 2. WALIDACJA – czy przyszły realne dane
-            if (dataBytes.size <= 1) {
-                Log.w(
-                    "TARIFF",
-                    "Odebrano niepełne dane taryfy (${dataBytes.size} bajt) – oczekiwanie na pełną tabelę"
-                )
-
-                // ❗ NIE ustawiamy flag
-                // ❗ NIE zapisujemy pliku
-                // ❗ Nadal czekamy na poprawne dane
-
+            // 1️⃣ znajdź początek taryfy
+            val start = findTariffStartSmart(frame)
+            if (start < 0) {
+                Log.e("TARIFF", "❌ Nie znaleziono taryfy w ramce")
                 return
             }
 
-            // ✅ 3. ZAPIS DO PLIKU (dopiero gdy dane są poprawne)
-            saveTariffToFile(context.applicationContext, dataBytes)
+            // 2️⃣ wytnij taryfę wg LEN
+            val tmp = frame.copyOfRange(start, frame.size)
+            val len = tmp.u32be(1).toInt()
 
-            // ✅ 4. Aktualizacja flag – TYLKO gdy dane OK
+            if (len <= 0 || len > tmp.size) {
+                Log.e("TARIFF", "❌ Niepoprawna długość taryfy LEN=$len")
+                return
+            }
+
+            val tariffBytes = frame.copyOfRange(start, start + len)
+
+            // 3️⃣ PARSOWANIE (parser/tariff)
+            val tariff = TariffParser.parse(tariffBytes)
+
+            // 4️⃣ cache taryfy
+            TariffRepository.update(tariff)
+
+            // 5️⃣ powiadom ViewModel
+            viewModel.onTariffUpdated()
+
+            // 6️⃣ zapis binarki (opcjonalnie)
+            saveTariffToFile(context, tariffBytes)
+
+            // 7️⃣ flagi statusu
             statusManager.setFlag("MISSING_TARIFF_TABLE_FLAG", false)
             statusManager.updateStatusFlags(status)
 
-            Log.i(
-                "TARIFF",
-                "Poprawna tabela taryf odebrana (${dataBytes.size} bajtów)"
-            )
+            Log.i("TARIFF", "========== END ==========")
 
         } catch (e: Exception) {
-            Log.e("TARIFF", "Błąd przetwarzania taryfy: ${e.message}", e)
+            Log.e("TARIFF", "❌ Błąd przetwarzania taryfy", e)
         }
 
-        // 5. Odesłanie odpowiedzi (zgodnie z protokołem)
+        // 8️⃣ odpowiedź do autokomputera
         sendSimple(packet, socket, AcAnswer.ANS_SAVE_TARIFF_TABLE)
     }
+
+
+
+
+
 
 
     private fun sendBlackList(
